@@ -3,9 +3,9 @@ import { cn } from "@/utils/cn";
 
 const variants = {
   primary:
-    "bg-primary text-on-primary hover:bg-primary-hover disabled:bg-primary-disabled disabled:text-on-primary/70 disabled:opacity-100",
+    "bg-primary text-white hover:bg-primary-hover disabled:bg-primary-disabled disabled:text-white/70 disabled:opacity-100",
   secondary:
-    "border border-border bg-surface text-foreground hover:bg-surface-elevated disabled:opacity-60",
+    "border border-border-strong bg-surface text-foreground hover:border-primary/35 hover:bg-primary-soft hover:text-primary disabled:opacity-60",
   ghost:
     "bg-transparent text-foreground/80 hover:bg-surface hover:text-foreground disabled:opacity-60",
   destructive:
@@ -14,13 +14,13 @@ const variants = {
   inverse:
     "bg-white text-primary hover:bg-white/90 disabled:bg-white/70 disabled:text-primary/60",
   inverseOutline:
-    "border border-white/35 bg-transparent text-white hover:bg-white/10 disabled:opacity-60",
+    "border border-white/40 bg-transparent text-white hover:bg-white/10 disabled:opacity-60",
 };
 
 const sizes = {
-  sm: "h-9 px-3.5 text-xs rounded-md",
-  md: "h-10 px-5 text-sm rounded-md",
-  lg: "h-11 px-6 text-sm rounded-md",
+  sm: "h-9 px-3.5 text-xs rounded-lg",
+  md: "h-10 px-5 text-sm rounded-lg",
+  lg: "h-12 px-7 text-[15px] rounded-lg",
 };
 
 const baseClass =

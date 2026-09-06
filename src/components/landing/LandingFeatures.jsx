@@ -2,33 +2,33 @@
 
 import {
   BarChart3,
-  Sparkles,
-  UserRound,
+  MessageSquareText,
+  Settings2,
   Users,
 } from "lucide-react";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/FadeIn";
 
 const features = [
   {
-    title: "AI Assistant",
-    body: "Ask workplace questions and get answers grounded in your employee data.",
-    icon: Sparkles,
-    yellow: true,
+    title: "Grounded AI assistant",
+    body: "Ask who works where, who is active, or how the workforce looks — replies stream from live employee data.",
+    icon: MessageSquareText,
+    accent: true,
   },
   {
-    title: "Employee Directory",
-    body: "Search and filter teammates by name, role, department, and status.",
+    title: "Searchable directory",
+    body: "Find teammates by name, role, department, and status without digging through spreadsheets.",
     icon: Users,
   },
   {
-    title: "Workforce Analytics",
-    body: "See department mix and active headcount with clear high-contrast charts.",
+    title: "Workforce analytics",
+    body: "Department mix and headcount at a glance, so leaders see structure instead of raw tables.",
     icon: BarChart3,
   },
   {
-    title: "Personalized Workspace",
-    body: "Theme, profile, and notification preferences that feel like one product.",
-    icon: UserRound,
+    title: "Your workspace, your rules",
+    body: "Theme, profile, notifications, and bring-your-own Gemini or OpenAI keys in Settings.",
+    icon: Settings2,
   },
 ];
 
@@ -36,56 +36,58 @@ export function LandingFeatures() {
   return (
     <section
       id="features"
-      className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6 md:py-24"
+      className="mx-auto w-full max-w-6xl px-4 py-16 md:px-6 md:py-24"
     >
       <FadeIn>
         <div className="max-w-2xl">
-          <p className="text-caption text-primary">Features</p>
+          <p className="text-caption text-primary">What you get</p>
           <h2 className="mt-3 text-h1 text-foreground">
-            Built for every modern workplace challenge
+            Everything a workplace assistant should do — without the noise
           </h2>
           <p className="mt-4 text-base text-body">
-            Directory, analytics, and AI in one product - precise enough for work,
-            fast enough to use all day.
+            Four focused capabilities. One product feel. Built for speed and
+            clarity, not ornament.
           </p>
         </div>
       </FadeIn>
 
-      <Stagger className="mt-12 grid gap-4 sm:grid-cols-2" delay={0.05}>
-        {features.map((feature) => {
+      <Stagger className="mt-12 grid gap-0 border-t border-border sm:grid-cols-2" delay={0.06}>
+        {features.map((feature, index) => {
           const Icon = feature.icon;
           return (
             <StaggerItem key={feature.title}>
               <article
                 className={
-                  feature.yellow
-                    ? "h-full rounded-lg bg-primary p-5 text-on-primary sm:p-8"
-                    : "h-full rounded-lg border border-border bg-surface p-5 text-foreground sm:p-8"
+                  feature.accent
+                    ? "group relative h-full border-b border-border bg-primary p-6 text-on-primary sm:border-r sm:p-8"
+                    : `group relative h-full border-b border-border p-6 sm:p-8 ${
+                        index % 2 === 0 ? "sm:border-r" : ""
+                      }`
                 }
               >
                 <span
                   className={
-                    feature.yellow
-                      ? "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-white/15 text-on-primary"
-                      : "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary-soft text-primary"
+                    feature.accent
+                      ? "mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-on-primary"
+                      : "mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft text-primary"
                   }
                 >
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <h3
                   className={
-                    feature.yellow
-                      ? "text-lg font-semibold text-on-primary"
-                      : "text-lg font-semibold text-foreground"
+                    feature.accent
+                      ? "font-display text-lg font-semibold tracking-tight text-on-primary"
+                      : "font-display text-lg font-semibold tracking-tight text-foreground"
                   }
                 >
                   {feature.title}
                 </h3>
                 <p
                   className={
-                    feature.yellow
-                      ? "mt-2 text-sm text-on-primary/80"
-                      : "mt-2 text-sm text-muted"
+                    feature.accent
+                      ? "mt-2 max-w-sm text-sm leading-relaxed text-on-primary/80"
+                      : "mt-2 max-w-sm text-sm leading-relaxed text-muted"
                   }
                 >
                   {feature.body}

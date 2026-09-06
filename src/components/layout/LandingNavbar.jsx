@@ -21,23 +21,26 @@ export function LandingNavbar() {
   const { theme, toggleTheme, ready } = useTheme();
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-border bg-background">
-      <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-4 md:px-6">
-        <Link to="/" className={`flex min-w-0 items-center gap-2.5 ${focusRing} rounded-md`}>
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-on-primary">
+    <header className="sticky top-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 md:px-6">
+        <Link
+          to="/"
+          className={`flex min-w-0 items-center gap-2.5 ${focusRing} rounded-lg`}
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-on-primary">
             EA
           </span>
-          <span className="truncate text-base font-bold tracking-tight text-foreground sm:text-lg">
+          <span className="font-display truncate text-base font-bold tracking-tight text-foreground sm:text-lg">
             EmployeeAI
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm font-medium text-muted md:flex">
+        <nav className="hidden items-center gap-1 text-sm font-medium text-muted md:flex">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={`rounded-md transition hover:text-foreground ${focusRing}`}
+              className={`rounded-lg px-3 py-2 transition hover:bg-surface hover:text-foreground ${focusRing}`}
             >
               {link.label}
             </a>
@@ -49,7 +52,7 @@ export function LandingNavbar() {
             type="button"
             onClick={toggleTheme}
             disabled={!ready}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground transition disabled:opacity-60 ${focusRing}`}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-foreground transition hover:bg-surface-elevated disabled:opacity-60 ${focusRing}`}
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
@@ -59,7 +62,12 @@ export function LandingNavbar() {
             )}
           </button>
 
-          <Button href="/login" variant="ghost" size="sm" className="hidden sm:inline-flex">
+          <Button
+            href="/login"
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
             Sign in
           </Button>
           <Button href="/register" size="sm" className="hidden sm:inline-flex">
@@ -68,7 +76,7 @@ export function LandingNavbar() {
 
           <button
             type="button"
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground md:hidden ${focusRing}`}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-foreground md:hidden ${focusRing}`}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -80,7 +88,7 @@ export function LandingNavbar() {
 
       <div
         className={cn(
-          "border-t border-border bg-surface md:hidden",
+          "border-t border-border bg-surface/95 backdrop-blur-md md:hidden",
           open ? "block" : "hidden",
         )}
       >
@@ -89,7 +97,7 @@ export function LandingNavbar() {
             <a
               key={link.href}
               href={link.href}
-              className={`rounded-md px-3 py-3 text-sm font-medium text-muted hover:bg-background hover:text-foreground ${focusRing}`}
+              className={`rounded-lg px-3 py-3 text-sm font-medium text-muted hover:bg-background hover:text-foreground ${focusRing}`}
               onClick={() => setOpen(false)}
             >
               {link.label}

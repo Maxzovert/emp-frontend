@@ -46,9 +46,18 @@ export function AuthProvider({ children }) {
     if (!data.success) {
       return data;
     }
-    setUser(data.user);
+    // Confirm the HTTP-only cookie actually stuck (cross-origin setups often fail here).
+    const verified = await refresh();
+    if (!verified) {
+      setUser(null);
+      return {
+        success: false,
+        error:
+          "Sign-in succeeded but the session cookie was not saved. On Vercel, leave VITE_API_URL unset so /api is proxied same-origin.",
+      };
+    }
     return data;
-  }, []);
+  }, [refresh]);
 
   const register = useCallback(async (payload) => {
     const res = await apiFetch("/api/auth/register", {
@@ -60,9 +69,17 @@ export function AuthProvider({ children }) {
     if (!data.success) {
       return data;
     }
-    setUser(data.user);
+    const verified = await refresh();
+    if (!verified) {
+      setUser(null);
+      return {
+        success: false,
+        error:
+          "Account created but the session cookie was not saved. On Vercel, leave VITE_API_URL unset so /api is proxied same-origin.",
+      };
+    }
     return data;
-  }, []);
+  }, [refresh]);
 
   const logout = useCallback(async () => {
     await apiFetch("/api/auth/logout", { method: "POST" });

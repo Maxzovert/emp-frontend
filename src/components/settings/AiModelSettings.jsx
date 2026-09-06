@@ -40,7 +40,12 @@ export function AiModelSettings() {
     setError("");
     try {
       const res = await apiFetch("/api/auth/ai-settings");
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        setError("Your session expired. Sign in again to manage AI settings.");
+        setSettings(null);
+        return;
+      }
       if (!data.success) {
         setError(data.error || "Unable to load AI settings.");
         setSettings(null);

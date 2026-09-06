@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { usePreferences } from "@/context/PreferencesContext";
 import { apiFetch } from "@/utils/api";
+import { notifyAiSettingsChanged, onAiSettingsChanged } from "@/utils/aiSettingsEvents";
 import { cn } from "@/utils/cn";
 
 const PROVIDER_META = {
@@ -35,8 +36,8 @@ export function AiModelSettings() {
   const [error, setError] = useState("");
   const [keys, setKeys] = useState({ gemini: "", openai: "" });
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ quiet = false } = {}) => {
+    if (!quiet) setLoading(true);
     setError("");
     try {
       const res = await apiFetch("/api/auth/ai-settings");
@@ -44,24 +45,29 @@ export function AiModelSettings() {
       if (res.status === 401) {
         setError("Your session expired. Sign in again to manage AI settings.");
         setSettings(null);
-        return;
+        return false;
       }
       if (!data.success) {
         setError(data.error || "Unable to load AI settings.");
         setSettings(null);
-        return;
+        return false;
       }
       setSettings(data.settings);
+      return true;
     } catch {
       setError("Unable to load AI settings.");
       setSettings(null);
+      return false;
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     load();
+    return onAiSettingsChanged(() => {
+      load({ quiet: true });
+    });
   }, [load]);
 
   async function selectProvider(id) {
@@ -82,7 +88,8 @@ export function AiModelSettings() {
         setError(data.error || "Unable to switch provider.");
         return;
       }
-      setSettings(data.settings);
+      await load({ quiet: true });
+      notifyAiSettingsChanged();
       flashSaved("AI model updated");
     } catch {
       setError("Unable to switch provider.");
@@ -114,8 +121,9 @@ export function AiModelSettings() {
         setError(data.error || "Unable to save API key.");
         return;
       }
-      setSettings(data.settings);
       setKeys((prev) => ({ ...prev, [providerId]: "" }));
+      await load({ quiet: true });
+      notifyAiSettingsChanged();
       flashSaved(`${meta.title} key saved`);
     } catch {
       setError("Unable to save API key.");
@@ -141,7 +149,8 @@ export function AiModelSettings() {
         setError(data.error || "Unable to remove API key.");
         return;
       }
-      setSettings(data.settings);
+      await load({ quiet: true });
+      notifyAiSettingsChanged();
       flashSaved(`${meta.title} key removed`);
     } catch {
       setError("Unable to remove API key.");

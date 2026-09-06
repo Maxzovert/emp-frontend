@@ -11,22 +11,26 @@ import {
   Sparkles,
 } from "lucide-react";
 import { apiFetch } from "@/utils/api";
+import {
+  notifyAiSettingsChanged,
+  onAiSettingsChanged,
+} from "@/utils/aiSettingsEvents";
 import { cn } from "@/utils/cn";
-
-function getSpeechRecognition() {
-  if (typeof window === "undefined") return null;
-  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-}
-
-function joinParts(...parts) {
-  return parts
-    .map((part) => String(part || "").trim())
-    .filter(Boolean)
-    .join(" ");
-}
+import {
+  getSpeechRecognitionCtor,
+  joinTranscriptParts,
+  pickBestTranscript,
+  resolveSpeechLang,
+  stopMediaStream,
+  warmMicrophone,
+} from "@/utils/speechRecognition";
 
 const INPUT_MIN_H = 24;
 const INPUT_MAX_H = 120;
+/** Stop after this much silence once we have some speech (ms). */
+const VOICE_IDLE_MS = 1600;
+/** Hard cap so a stuck session cannot hang forever. */
+const VOICE_MAX_MS = 20000;
 
 function autoSizeTextarea(el) {
   if (!el) return;
@@ -48,12 +52,16 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
   const [providerSaving, setProviderSaving] = useState(false);
   const [providerOpen, setProviderOpen] = useState(false);
   const recognitionRef = useRef(null);
+  const micStreamRef = useRef(null);
   const textareaRef = useRef(null);
   const providerMenuRef = useRef(null);
   const valueRef = useRef("");
   const baseTextRef = useRef("");
   const finalTextRef = useRef("");
   const wantListenRef = useRef(false);
+  const idleTimerRef = useRef(null);
+  const maxTimerRef = useRef(null);
+  const startingRef = useRef(false);
 
   const loadAiSettings = useCallback(async () => {
     setAiLoading(true);
@@ -74,6 +82,23 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
 
   useEffect(() => {
     loadAiSettings();
+  }, [loadAiSettings]);
+
+  useEffect(() => {
+    return onAiSettingsChanged(() => {
+      loadAiSettings();
+    });
+  }, [loadAiSettings]);
+
+  // Refresh when the assistant panel is focused again after editing keys in Settings.
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") {
+        loadAiSettings();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, [loadAiSettings]);
 
   useEffect(() => {
@@ -99,15 +124,19 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
   }, [providerOpen]);
 
   useEffect(() => {
-    setVoiceSupported(Boolean(getSpeechRecognition()));
+    setVoiceSupported(Boolean(getSpeechRecognitionCtor()));
     return () => {
       wantListenRef.current = false;
+      window.clearTimeout(idleTimerRef.current);
+      window.clearTimeout(maxTimerRef.current);
       try {
         recognitionRef.current?.abort?.();
       } catch {
         // ignore
       }
       recognitionRef.current = null;
+      stopMediaStream(micStreamRef.current);
+      micStreamRef.current = null;
     };
   }, []);
 
@@ -132,6 +161,7 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
       const data = await res.json();
       if (data.success) {
         setAiSettings(data.settings);
+        notifyAiSettingsChanged();
       }
     } catch {
       // keep previous selection
@@ -150,29 +180,59 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
     requestAnimationFrame(() => autoSizeTextarea(textareaRef.current));
   }
 
-  function stopListening(aborted = false) {
-    wantListenRef.current = false;
-    setListening(false);
-    const recognition = recognitionRef.current;
-    recognitionRef.current = null;
-    if (!recognition) return;
-    try {
-      if (aborted) recognition.abort?.();
-      else recognition.stop?.();
-    } catch {
-      // ignore
-    }
+  function clearVoiceTimers() {
+    window.clearTimeout(idleTimerRef.current);
+    window.clearTimeout(maxTimerRef.current);
+    idleTimerRef.current = null;
+    maxTimerRef.current = null;
   }
 
-  function startListening() {
-    const SpeechRecognition = getSpeechRecognition();
+  function applyVoiceValue(interim = "") {
+    setValue(
+      joinTranscriptParts(baseTextRef.current, finalTextRef.current, interim),
+    );
+  }
+
+  function bumpIdleTimer() {
+    window.clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = window.setTimeout(() => {
+      // End quickly after the user pauses — better for chat questions.
+      if (wantListenRef.current) stopListening(false);
+    }, VOICE_IDLE_MS);
+  }
+
+  function stopListening(aborted = false) {
+    wantListenRef.current = false;
+    startingRef.current = false;
+    clearVoiceTimers();
+    setListening(false);
+
+    const recognition = recognitionRef.current;
+    recognitionRef.current = null;
+    if (recognition) {
+      try {
+        if (aborted) recognition.abort?.();
+        else recognition.stop?.();
+      } catch {
+        // ignore
+      }
+    }
+
+    stopMediaStream(micStreamRef.current);
+    micStreamRef.current = null;
+
+    // Drop trailing interim noise; keep committed finals.
+    applyVoiceValue("");
+  }
+
+  async function startListening() {
+    const SpeechRecognition = getSpeechRecognitionCtor();
     if (!SpeechRecognition) {
       setVoiceError("Voice input needs Chrome or Edge.");
       return;
     }
-    if (disabled || loading) return;
+    if (disabled || loading || startingRef.current) return;
 
-    // Secure contexts only (localhost / https).
     if (
       typeof window !== "undefined" &&
       !window.isSecureContext &&
@@ -187,49 +247,88 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
     baseTextRef.current = valueRef.current.trim();
     finalTextRef.current = "";
     wantListenRef.current = true;
+    startingRef.current = true;
+    setListening(true);
+
+    // Ask for mic permission first (then release) so SpeechRecognition
+    // can open the device itself — holding the stream blocks recognition
+    // on many browsers and made production feel slow/inaccurate.
+    const stream = await warmMicrophone();
+    if (!wantListenRef.current) {
+      stopMediaStream(stream);
+      startingRef.current = false;
+      setListening(false);
+      return;
+    }
+    if (!stream) {
+      startingRef.current = false;
+      wantListenRef.current = false;
+      setListening(false);
+      setVoiceError("Microphone blocked. Allow mic access in the browser.");
+      return;
+    }
+    stopMediaStream(stream);
+    micStreamRef.current = null;
 
     const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
+    // Utterance mode: more accurate + faster for short workplace questions.
+    // Continuous+restart loops were laggy and error-prone in production.
+    recognition.lang = resolveSpeechLang();
     recognition.interimResults = true;
-    recognition.continuous = true;
-    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 3;
     recognitionRef.current = recognition;
 
     recognition.onstart = () => {
       if (!wantListenRef.current) return;
+      startingRef.current = false;
       setListening(true);
       setVoiceError("");
+      window.clearTimeout(maxTimerRef.current);
+      maxTimerRef.current = window.setTimeout(() => {
+        if (wantListenRef.current) stopListening(false);
+      }, VOICE_MAX_MS);
     };
 
     recognition.onresult = (event) => {
+      if (!wantListenRef.current) return;
       let interim = "";
-      let newlyFinal = "";
+      let gotSpeech = false;
 
       for (let i = event.resultIndex; i < event.results.length; i += 1) {
         const result = event.results[i];
-        const piece = result?.[0]?.transcript || "";
+        const piece = pickBestTranscript(result);
         if (!piece) continue;
-        if (result.isFinal) newlyFinal += piece;
-        else interim += piece;
+        gotSpeech = true;
+        if (result.isFinal) {
+          finalTextRef.current = joinTranscriptParts(
+            finalTextRef.current,
+            piece,
+          );
+        } else {
+          interim = joinTranscriptParts(interim, piece);
+        }
       }
 
-      if (newlyFinal) {
-        finalTextRef.current = joinParts(finalTextRef.current, newlyFinal);
-      }
-
-      setValue(joinParts(baseTextRef.current, finalTextRef.current, interim));
+      applyVoiceValue(interim);
+      if (gotSpeech) bumpIdleTimer();
     };
 
     recognition.onerror = (event) => {
       const code = event?.error || "";
-      // Benign / expected during stop or short silence.
       if (code === "aborted" || code === "no-speech") return;
       wantListenRef.current = false;
+      startingRef.current = false;
+      clearVoiceTimers();
       setListening(false);
+      stopMediaStream(micStreamRef.current);
+      micStreamRef.current = null;
       if (code === "not-allowed" || code === "service-not-allowed") {
         setVoiceError("Microphone blocked. Allow mic access in the browser.");
       } else if (code === "network") {
-        setVoiceError("Voice service unavailable. Check your network.");
+        setVoiceError(
+          "Voice service unavailable. Check your network and try again.",
+        );
       } else if (code === "audio-capture") {
         setVoiceError("No microphone found. Plug one in and try again.");
       } else {
@@ -238,34 +337,33 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
     };
 
     recognition.onend = () => {
-      // Chrome often ends sessions early; keep going while user wants mic on.
-      if (wantListenRef.current && recognitionRef.current === recognition) {
-        try {
-          recognition.start();
-          return;
-        } catch {
-          // fall through and stop UI
-        }
-      }
-      wantListenRef.current = false;
-      setListening(false);
+      startingRef.current = false;
+      // With continuous=false Chrome ends after a pause — finalize cleanly.
       if (recognitionRef.current === recognition) {
         recognitionRef.current = null;
       }
+      clearVoiceTimers();
+      stopMediaStream(micStreamRef.current);
+      micStreamRef.current = null;
+      wantListenRef.current = false;
+      setListening(false);
+      applyVoiceValue("");
     };
 
     try {
       recognition.start();
-      setListening(true);
     } catch {
       wantListenRef.current = false;
+      startingRef.current = false;
       setListening(false);
+      stopMediaStream(micStreamRef.current);
+      micStreamRef.current = null;
       setVoiceError("Couldn't start voice input. Click the mic again.");
     }
   }
 
   function toggleVoice() {
-    if (listening || wantListenRef.current) {
+    if (listening || wantListenRef.current || startingRef.current) {
       stopListening(true);
       return;
     }
@@ -342,7 +440,7 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
               !hasAnyKey
                 ? "Add an API key in Settings to start…"
                 : listening
-                  ? "Listening… speak now"
+                  ? "Listening… speak your question, then pause"
                   : "Ask the assistant…"
             }
             className={cn(
@@ -370,7 +468,11 @@ export function ChatInput({ onSend, disabled = false, loading = false }) {
                 )}
                 aria-label={listening ? "Stop voice input" : "Start voice input"}
                 aria-pressed={listening}
-                title={listening ? "Stop listening" : "Start voice input"}
+                title={
+                  listening
+                    ? "Stop listening"
+                    : "Voice input — speak, then pause"
+                }
               >
                 {listening ? (
                   <MicOff className="h-4 w-4" />

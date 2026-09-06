@@ -1,19 +1,16 @@
 "use client";
 
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowUpRight, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { useAssistantPanel } from "@/context/AssistantPanelContext";
+import { pickRandomPrompts } from "@/constants/suggestedPrompts";
 
-const SUGGESTED_PROMPTS = [
-  "Who works in Engineering?",
-  "Show me employee statistics",
-  "Which departments do we have?",
-  "Find a Product Manager",
-];
-
-export function AIOverviewCard({ prompts = SUGGESTED_PROMPTS }) {
+export function AIOverviewCard({ count = 4 }) {
   const { openPanel, openWithPrompt } = useAssistantPanel();
+  const [seed, setSeed] = useState(0);
+  const prompts = useMemo(() => pickRandomPrompts(count), [count, seed]);
 
   return (
     <FadeIn delay={0.08}>
@@ -32,21 +29,33 @@ export function AIOverviewCard({ prompts = SUGGESTED_PROMPTS }) {
               </p>
             </div>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            className="w-full sm:w-auto"
-            onClick={openPanel}
-          >
-            Open assistant
-            <ArrowUpRight className="h-4 w-4" />
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="w-full sm:w-auto"
+              onClick={() => setSeed((n) => n + 1)}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Shuffle prompts
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={openPanel}
+            >
+              Open assistant
+              <ArrowUpRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-2 sm:grid-cols-2">
           {prompts.map((prompt) => (
             <button
-              key={prompt}
+              key={`${seed}-${prompt}`}
               type="button"
               onClick={() => openWithPrompt(prompt)}
               className="group flex min-h-12 items-center justify-between gap-3 rounded-md border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"

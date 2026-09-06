@@ -325,7 +325,7 @@ export function AssistantSidebar() {
               <div className="px-3 pb-2">
                 <ErrorState
                   title="Couldn't reach the assistant"
-                  description={error}
+                  description={`${error} The backend runs on Render’s free tier, so it can take a while to wake up after idle — please wait a bit, then reload or try again.`}
                   onRetry={retry}
                   className="py-6"
                 />

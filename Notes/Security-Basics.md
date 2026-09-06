@@ -13,7 +13,7 @@ Keys in the browser or git are easy to leak. Bad SQL is easy to inject.
 - AI keys + `DATABASE_URL` are server-only
 - Chat goes through `/api/chat` → LangChain
 - Neon queries use parameterized tagged templates
-- AI context omits emails and caps rows
+- AI context includes emails and caps rows
 
 Full policy: `docs/Security.md`.
 

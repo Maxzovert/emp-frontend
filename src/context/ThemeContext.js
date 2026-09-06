@@ -20,12 +20,12 @@ function readStoredTheme() {
   } catch {
     // Ignore storage access errors (private mode, etc.).
   }
-  return "dark";
+  return "light";
 }
 
 export function ThemeProvider({ children }) {
-  // Match the blocking script in layout.js so hydration doesn't flash dark.
-  const [theme, setThemeState] = useState("dark");
+  // Match the blocking script in index.html so first paint stays light by default.
+  const [theme, setThemeState] = useState("light");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {

@@ -160,8 +160,8 @@ async function readSseStream(response, { onToken, onDone, onError }) {
   }
 }
 
-/** Reveal streamed text gradually so the UI feels like live typing. */
-function createTypewriter({ onUpdate, charsPerTick = 3, intervalMs = 16 }) {
+/** Reveal streamed text. Keep ticks aggressive so UI stays near real-time. */
+function createTypewriter({ onUpdate, charsPerTick = 24, intervalMs = 8 }) {
   let target = "";
   let shown = "";
   let timer = null;
@@ -194,7 +194,7 @@ function createTypewriter({ onUpdate, charsPerTick = 3, intervalMs = 16 }) {
     }
 
     const remaining = target.length - shown.length;
-    const step = Math.min(remaining > 48 ? 8 : charsPerTick, remaining);
+    const step = Math.min(remaining > 24 ? 48 : charsPerTick, remaining);
     shown = target.slice(0, shown.length + step);
     paint(true);
   }

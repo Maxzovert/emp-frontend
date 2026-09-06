@@ -17,8 +17,8 @@ export function LoginForm() {
     return next && next.startsWith("/") ? next : "/dashboard";
   }, [searchParams]);
 
-  const [email, setEmail] = useState("john.carter@employeeai.app");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -74,9 +74,6 @@ export function LoginForm() {
         <Link to="/register" className="font-semibold text-primary hover:underline">
           Create one
         </Link>
-      </p>
-      <p className="text-center text-xs text-muted">
-        Demo: john.carter@employeeai.app / password123
       </p>
     </form>
   );

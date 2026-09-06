@@ -19,7 +19,7 @@ export function DepartmentPieChart({ data = [] }) {
         Share of workforce by department (pie chart).
       </CardDescription>
 
-      <div className="mt-6 h-72 w-full">
+      <div className="mt-6 h-64 w-full min-w-0 sm:h-72">
         {data.length === 0 ? (
           <p className="text-sm text-muted">No department data yet.</p>
         ) : (
@@ -30,9 +30,9 @@ export function DepartmentPieChart({ data = [] }) {
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
-                cy="48%"
-                innerRadius={52}
-                outerRadius={88}
+                cy="45%"
+                innerRadius="32%"
+                outerRadius="58%"
                 paddingAngle={3}
                 stroke="var(--color-surface)"
                 strokeWidth={2}

@@ -20,12 +20,15 @@ export function DepartmentBarChart({ data = [] }) {
         Bar chart derived from the same employee dataset.
       </CardDescription>
 
-      <div className="mt-6 h-72 w-full">
+      <div className="mt-6 h-64 w-full min-w-0 sm:h-72">
         {data.length === 0 ? (
           <p className="text-sm text-muted">No department data yet.</p>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 8 }}>
+            <BarChart
+              data={data}
+              margin={{ top: 8, right: 4, left: -18, bottom: 8 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
               <XAxis
                 dataKey="name"

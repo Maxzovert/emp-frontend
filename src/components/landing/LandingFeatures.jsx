@@ -36,7 +36,7 @@ export function LandingFeatures() {
   return (
     <section
       id="features"
-      className="mx-auto w-full max-w-6xl px-4 py-20 md:px-6 md:py-24"
+      className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6 md:py-24"
     >
       <FadeIn>
         <div className="max-w-2xl">
@@ -59,15 +59,15 @@ export function LandingFeatures() {
               <article
                 className={
                   feature.yellow
-                    ? "h-full rounded-lg bg-primary p-8 text-white"
-                    : "h-full rounded-lg border border-border bg-surface p-8"
+                    ? "h-full rounded-lg bg-primary p-5 text-on-primary sm:p-8"
+                    : "h-full rounded-lg border border-border bg-surface p-5 text-foreground sm:p-8"
                 }
               >
                 <span
                   className={
                     feature.yellow
-                      ? "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-white/10"
-                      : "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-surface-elevated text-primary"
+                      ? "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-white/15 text-on-primary"
+                      : "mb-5 inline-flex h-10 w-10 items-center justify-center rounded-md bg-primary-soft text-primary"
                   }
                 >
                   <Icon className="h-5 w-5" aria-hidden />
@@ -75,7 +75,7 @@ export function LandingFeatures() {
                 <h3
                   className={
                     feature.yellow
-                      ? "text-lg font-semibold text-white"
+                      ? "text-lg font-semibold text-on-primary"
                       : "text-lg font-semibold text-foreground"
                   }
                 >
@@ -84,7 +84,7 @@ export function LandingFeatures() {
                 <p
                   className={
                     feature.yellow
-                      ? "mt-2 text-sm text-white/80"
+                      ? "mt-2 text-sm text-on-primary/80"
                       : "mt-2 text-sm text-muted"
                   }
                 >

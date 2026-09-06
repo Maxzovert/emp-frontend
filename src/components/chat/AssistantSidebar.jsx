@@ -193,7 +193,8 @@ export function AssistantSidebar() {
             : undefined
         }
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-[22rem] flex-col border-l border-border bg-background transition-transform duration-300 ease-out sm:max-w-md",
+          "fixed inset-y-0 right-0 z-50 flex w-full flex-col border-l border-border bg-background transition-transform duration-300 ease-out",
+          "sm:max-w-md",
           "lg:static lg:z-20 lg:max-w-none lg:shrink-0 lg:transition-[width,opacity,transform] lg:duration-300",
           dragging && "lg:transition-none select-none",
           open

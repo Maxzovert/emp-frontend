@@ -18,7 +18,7 @@ export function RecentEmployees({ employees = [] }) {
   return (
     <FadeIn delay={0.1}>
       <section className="overflow-hidden rounded-lg border border-border bg-surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-5 md:px-6">
           <div>
             <h3 className="text-lg font-bold tracking-tight text-foreground">
               People nearby
@@ -44,7 +44,7 @@ export function RecentEmployees({ employees = [] }) {
             {employees.map((employee) => (
               <li
                 key={employee.id}
-                className="flex items-center gap-3 px-5 py-3.5 transition hover:bg-background md:px-6"
+                className="flex items-center gap-3 px-4 py-3.5 transition hover:bg-background sm:px-5 md:px-6"
               >
                 <Avatar name={employee.name} size="md" />
                 <div className="min-w-0 flex-1">

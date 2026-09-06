@@ -6,7 +6,7 @@ export function LandingFooter() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-16 md:flex-row md:items-start md:justify-between md:px-6">
         <div className="max-w-sm">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-on-primary">
               EA
             </span>
             <span className="font-semibold text-foreground">EmployeeAI</span>
@@ -72,7 +72,7 @@ export function LandingFooter() {
       </div>
 
       <div className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 text-xs text-muted md:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-4 text-xs text-muted sm:flex-row sm:items-center sm:justify-between md:px-6">
           <span>© {new Date().getFullYear()} EmployeeAI</span>
           <span>React · Neon · LangChain</span>
         </div>

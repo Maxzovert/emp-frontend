@@ -19,6 +19,7 @@ export function ChatHeader({
           <h2 className="text-h2 truncate text-foreground">{title}</h2>
           <p className="mt-1 text-sm text-muted">
             Streaming answers with saved chat history in this browser.
+            Configure Gemini or OpenAI under Settings → AI models.
           </p>
         </div>
       </div>

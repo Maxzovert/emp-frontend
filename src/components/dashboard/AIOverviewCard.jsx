@@ -17,14 +17,14 @@ export function AIOverviewCard({ prompts = SUGGESTED_PROMPTS }) {
 
   return (
     <FadeIn delay={0.08}>
-      <section className="rounded-lg border border-border bg-surface p-6 md:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-md bg-primary text-white">
+      <section className="rounded-lg border border-border bg-surface p-4 sm:p-6 md:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-white">
               <Sparkles className="h-4 w-4" aria-hidden />
             </span>
-            <div>
-              <h3 className="text-lg font-bold tracking-tight text-foreground">
+            <div className="min-w-0">
+              <h3 className="text-base font-bold tracking-tight text-foreground sm:text-lg">
                 Ask the workspace
               </h3>
               <p className="mt-1 max-w-lg text-sm text-muted">
@@ -32,7 +32,12 @@ export function AIOverviewCard({ prompts = SUGGESTED_PROMPTS }) {
               </p>
             </div>
           </div>
-          <Button type="button" size="sm" onClick={openPanel}>
+          <Button
+            type="button"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={openPanel}
+          >
             Open assistant
             <ArrowUpRight className="h-4 w-4" />
           </Button>

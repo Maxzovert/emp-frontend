@@ -28,15 +28,15 @@ export function Header() {
   const displayName = user?.name || profile?.name || "User";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-background px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-border bg-background px-3 sm:h-16 sm:gap-3 sm:px-4 md:px-6">
       <div className="min-w-0">
         <p className="text-caption text-muted">EmployeeAI</p>
-        <h1 className="truncate text-base font-semibold text-foreground md:text-lg">
+        <h1 className="truncate text-sm font-semibold text-foreground sm:text-base md:text-lg">
           {title}
         </h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
         <button
           type="button"
           onClick={togglePanel}

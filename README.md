@@ -1,10 +1,13 @@
 ﻿# EmployeeAI — Frontend
 
-React SPA for the EmployeeAI workplace portal: landing, auth, dashboard, employees, analytics, settings, and the AI assistant panel.
+React SPA for the EmployeeAI workplace portal: landing, auth, dashboard, employees, analytics, settings (including **AI model selection**), and the AI assistant panel.
+
+> **Add your own API key.** After sign-in, open **Settings → AI models**, paste a Gemini and/or OpenAI key that **you** created, and save. Providers stay locked until a key is configured. Never put API keys in frontend `.env` — they belong in Settings or the backend only.
 
 **Live:** [https://employeeai-blue.vercel.app](https://employeeai-blue.vercel.app)
 
-Companion API: see [`../backend`](../backend) · [https://emp-backend-4wcb.onrender.com](https://emp-backend-4wcb.onrender.com)
+Companion API: see [`../backend`](../backend) · [https://emp-backend-4wcb.onrender.com](https://emp-backend-4wcb.onrender.com)  
+Full HTTP reference: [`../API.md`](../API.md)
 
 ---
 
@@ -30,23 +33,31 @@ Companion API: see [`../backend`](../backend) · [https://emp-backend-4wcb.onren
 frontend/
 ├── public/
 ├── src/
-│   ├── components/     # UI, layout, chat, dashboard, employees, …
-│   ├── context/        # Auth, Theme, Preferences, Assistant panel
-│   ├── hooks/          # useChat, useTheme, useLocalStorage, …
-│   ├── layouts/        # App shell + auth layout
-│   ├── pages/          # Route screens
-│   ├── utils/          # api.js, formatters, cn, …
+│   ├── components/
+│   │   ├── settings/
+│   │   │   ├── AiModelSettings.jsx   # Gemini / OpenAI picker + API keys
+│   │   │   ├── AppearanceSettings.jsx
+│   │   │   ├── NotificationSettings.jsx
+│   │   │   ├── ProfileForm.jsx
+│   │   │   └── SettingsView.jsx
+│   │   ├── chat/                     # Assistant panel + streaming UI
+│   │   └── …
+│   ├── context/
+│   ├── hooks/                        # useChat, useTheme, …
+│   ├── layouts/
+│   ├── pages/
+│   ├── utils/api.js                  # apiFetch → /api (cookie credentials)
 │   ├── App.jsx
 │   ├── main.jsx
 │   └── index.css
 ├── index.html
-├── vite.config.js      # Dev proxy /api → localhost:3001
-├── vercel.json         # Prod rewrite /api → Render backend
+├── vite.config.js                    # Dev proxy /api → localhost:3001
+├── vercel.json                       # Prod rewrite /api → Render
 ├── .env.example
 └── package.json
 ```
 
-Path alias: `@/*` → `src/*` (see `jsconfig.json` / `vite.config.js`).
+Path alias: `@/*` → `src/*`.
 
 ---
 
@@ -54,7 +65,8 @@ Path alias: `@/*` → `src/*` (see `jsconfig.json` / `vite.config.js`).
 
 - Node.js **18+** (20+ recommended)
 - npm
-- Backend running locally on port **3001** (or a deployed API URL)
+- Backend on port **3001** (local) or a deployed API
+- **Your own** Gemini and/or OpenAI API key (for the assistant — configured in Settings, not in this frontend `.env`)
 
 ---
 
@@ -69,27 +81,27 @@ npm run dev
 
 Open **http://localhost:5173**.
 
-By default leave `VITE_API_URL` empty. Vite proxies `/api` to `http://localhost:3001`.
+Leave `VITE_API_URL` empty so Vite proxies `/api` → `http://localhost:3001`.
+
+Then sign in → **Settings → AI models** → **add your own API key** (from [Google AI Studio](https://aistudio.google.com/apikey) or [OpenAI](https://platform.openai.com/api-keys)).
 
 ---
 
 ## Environment variables
 
-Only `VITE_*` keys are exposed to the browser.
+Only `VITE_*` keys are public in the browser.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | No | Absolute backend origin (e.g. `https://emp-backend-4wcb.onrender.com`). Prefer **unset** in production so `/api` stays same-origin via `vercel.json`. |
-| `VITE_EMAIL_NOTIFICATIONS` | No | Set to `true` to enable email toggles in Settings |
-
-Example `.env` (local):
+| `VITE_API_URL` | No | Absolute API origin. Prefer **unset** (use proxy / `vercel.json`). |
+| `VITE_EMAIL_NOTIFICATIONS` | No | Enables email toggles in Settings |
 
 ```env
 VITE_EMAIL_NOTIFICATIONS=true
 # VITE_API_URL=
 ```
 
-API calls go through `src/utils/api.js` (`apiFetch` / `apiUrl`) with `credentials: "include"` for cookies.
+All API calls use `src/utils/api.js` (`credentials: "include"`).
 
 ---
 
@@ -97,9 +109,9 @@ API calls go through `src/utils/api.js` (`apiFetch` / `apiUrl`) with `credential
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Vite dev server (port 5173) |
-| `npm run build` | Production build → `dist/` |
-| `npm run preview` | Preview the production build |
+| `npm run dev` | Vite (port 5173) |
+| `npm run build` | Production → `dist/` |
+| `npm run preview` | Preview build |
 | `npm run lint` | ESLint |
 
 ---
@@ -114,12 +126,53 @@ API calls go through `src/utils/api.js` (`apiFetch` / `apiUrl`) with `credential
 | `/dashboard` | Auth | Overview + KPIs |
 | `/employees` | Auth | Directory CRUD |
 | `/analytics` | Auth | Charts |
-| `/settings` | Auth | Profile / theme / notifications |
-| `/assistant` | Auth | Redirects to dashboard with assistant open |
+| `/settings` | Auth | Profile / appearance / **AI models** / notifications |
+| `/assistant` | Auth | Opens assistant on dashboard |
 
-Protected routes use `ProtectedRoute` (redirects to `/login?next=…` when signed out).
+Hash deep-links for settings: `/settings#ai`, `/settings#appearance`, etc.
 
-Default theme is **light** (`employeeai-theme` in `localStorage`).
+Default theme: **light** (`localStorage` key `employeeai-theme`).
+
+---
+
+## Settings → AI models
+
+UI: `AiModelSettings.jsx` (Settings sidebar → **AI models**).
+
+**You must add your own API key** before chat works (unless the backend already has your key in env).
+
+| UI element | Behavior |
+|------------|----------|
+| Gemini / OpenAI cards | Select active chat provider |
+| **Locked** badge | No personal key and no server key for that provider |
+| **Active** badge | Currently used for `/api/chat` |
+| API key fields | Paste **your** Gemini and/or OpenAI keys (password inputs) |
+| Remove key | Clears the stored user key for that provider |
+
+Flow:
+
+1. Create a key you own ([Gemini](https://aistudio.google.com/apikey) / [OpenAI](https://platform.openai.com/api-keys))  
+2. Sign in  
+3. Open **Settings → AI models**  
+4. Paste **your** key → **Save** (unlocks that provider; may auto-select it)  
+5. Click an unlocked card to switch the active model  
+6. Chat uses the selection via the backend (keys never stay in the browser after save)
+
+APIs used:
+
+- `GET /api/auth/ai-settings`
+- `PATCH /api/auth/ai-settings` — `{ provider?, geminiApiKey?, openaiApiKey?, clearGemini?, clearOpenai? }`
+
+---
+
+## Features (UI)
+
+- **Auth** — login / register / logout
+- **Dashboard** — metrics, recent people, open assistant
+- **Employees** — search, filters, add / status / delete
+- **Analytics** — Recharts bar + pie
+- **Settings** — profile, theme, **AI models**, notifications
+- **AI panel** — SSE streaming (`useChat`), markdown, local chat history
 
 ---
 
@@ -127,46 +180,28 @@ Default theme is **light** (`employeeai-theme` in `localStorage`).
 
 ### Local
 
-`vite.config.js` proxies:
-
 ```text
 /api/*  →  http://localhost:3001/api/*
 ```
 
 ### Production (Vercel)
 
-`vercel.json` rewrites:
-
 ```text
 /api/:path*  →  https://emp-backend-4wcb.onrender.com/api/:path*
 /health      →  https://emp-backend-4wcb.onrender.com/health
 ```
 
-SPA fallback sends other paths to `index.html`.
-
-If you change the Render hostname, update `vercel.json` and redeploy.
-
----
-
-## Features (UI)
-
-- **Auth** — login / register / logout via `/api/auth/*`
-- **Dashboard** — metrics, recent people, open assistant
-- **Employees** — search, department filter, add, status change, delete
-- **Analytics** — bar + pie charts (Recharts)
-- **Settings** — profile sync, light/dark appearance, notification prefs
-- **AI panel** — streaming chat (`useChat` + SSE), markdown replies, history in `localStorage`
+Update `vercel.json` if the Render host changes.
 
 ---
 
 ## Deploy (Vercel)
 
-1. Import the repo; set **Root Directory** to `frontend`
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Do **not** set `VITE_API_URL` unless you intentionally call Render cross-origin
-5. Ensure backend `FRONTEND_URL` includes `https://employeeai-blue.vercel.app`
-6. Redeploy after changing `vercel.json`
+1. Root directory: `frontend`
+2. Build: `npm run build` · Output: `dist`
+3. Do **not** set `VITE_API_URL` unless you want cross-origin calls
+4. Backend `FRONTEND_URL` must include this site’s origin
+5. Redeploy after `vercel.json` changes
 
 ---
 
@@ -174,15 +209,17 @@ If you change the Render hostname, update `vercel.json` and redeploy.
 
 | Issue | Fix |
 |-------|-----|
-| Login **404** | `/api` not proxied — check Vite proxy locally or `vercel.json` on Vercel; redeploy |
-| CORS / cookies fail | Prefer same-origin `/api` proxy; or set `VITE_API_URL` + backend `FRONTEND_URL` |
-| API not reached locally | Start backend on port 3001 (`cd ../backend && npm run dev`) |
+| Login **404** | Check Vite proxy / `vercel.json`; redeploy |
+| AI models all locked | **Add your own API key** in Settings, or set your key on the backend env |
+| Cannot click OpenAI / Gemini | Provider is locked until **your** key exists |
+| Chat says not configured | Save **your** key or select an unlocked provider |
 | Theme stuck dark | Clear `localStorage.employeeai-theme` |
-| Env not applied | Vite only reads `.env` at start — restart `npm run dev`; Vercel needs rebuild for `VITE_*` |
+| Env not applied | Restart Vite; Vercel needs a rebuild for `VITE_*` |
 
 ---
 
 ## Related
 
 - Backend README: [`../backend/README.md`](../backend/README.md)
-- Monorepo overview: [`../README.md`](../README.md)
+- Root README: [`../README.md`](../README.md)
+- API instructions: [`../API.md`](../API.md)

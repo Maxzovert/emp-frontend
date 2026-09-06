@@ -22,7 +22,7 @@ export function AppLayout() {
           <Header />
           <main
             id="app-content"
-            className="min-h-0 flex-1 overflow-y-auto px-4 py-6 pb-24 md:px-6 md:pb-8"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-4 md:px-6 md:py-6 md:pb-8"
           >
             <Outlet />
           </main>

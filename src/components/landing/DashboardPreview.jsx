@@ -53,10 +53,10 @@ export function DashboardPreview() {
         <div className="grid gap-0 md:grid-cols-[7.5rem_1fr]">
           <aside className="hidden border-r border-border bg-surface-soft p-3 md:block">
             <div className="mb-4 flex items-center gap-2 px-1">
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-[10px] font-bold text-white">
+              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-[10px] font-bold text-on-primary">
                 EA
               </span>
-              <span className="text-xs font-semibold">EmployeeAI</span>
+              <span className="text-xs font-semibold text-foreground">EmployeeAI</span>
             </div>
             {["Overview", "Assistant", "Employees", "Analytics"].map(
               (item, i) => (
@@ -76,14 +76,16 @@ export function DashboardPreview() {
           </aside>
 
           <div className="space-y-3 p-3 sm:p-4">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-lg border border-border bg-background p-3"
+                  className="min-w-0 rounded-lg border border-border bg-background p-2 sm:p-3"
                 >
-                  <p className="text-[10px] text-muted">{stat.label}</p>
-                  <p className="mt-1 text-xl font-bold tracking-tight text-primary">
+                  <p className="truncate text-[9px] text-muted sm:text-[10px]">
+                    {stat.label}
+                  </p>
+                  <p className="mt-1 text-base font-bold tracking-tight text-primary sm:text-xl">
                     {stat.value}
                   </p>
                 </div>

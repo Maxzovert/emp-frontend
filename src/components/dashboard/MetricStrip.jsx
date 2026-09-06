@@ -35,18 +35,22 @@ export function MetricStrip({ items = [], className }) {
   return (
     <div
       ref={ref}
-      className={cn("grid grid-cols-2 gap-4 md:grid-cols-4", className)}
+      className={cn("grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4", className)}
     >
       {items.map((item) => (
         <div
           key={item.label}
           data-metric
-          className="rounded-lg border border-border bg-surface px-5 py-5 md:px-6"
+          className="rounded-lg border border-border bg-surface px-3 py-4 sm:px-5 sm:py-5 md:px-6"
         >
           <p className="text-caption text-muted">{item.label}</p>
-          <p className="mt-3 text-stat text-3xl md:text-4xl">{item.value}</p>
+          <p className="mt-2 text-stat text-2xl sm:mt-3 sm:text-3xl md:text-4xl">
+            {item.value}
+          </p>
           {item.hint ? (
-            <p className="mt-2 text-xs text-muted">{item.hint}</p>
+            <p className="mt-1.5 text-[11px] text-muted sm:mt-2 sm:text-xs">
+              {item.hint}
+            </p>
           ) : null}
         </div>
       ))}

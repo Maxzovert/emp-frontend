@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import {
   Bell,
+  Bot,
   Palette,
   UserRound,
 } from "lucide-react";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { AiModelSettings } from "@/components/settings/AiModelSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { Avatar } from "@/components/ui/Avatar";
@@ -19,6 +21,7 @@ import { cn } from "@/utils/cn";
 const SECTIONS = [
   { id: "profile", label: "Profile", icon: UserRound },
   { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "ai", label: "AI models", icon: Bot },
   { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
@@ -50,20 +53,20 @@ export function SettingsView() {
     <div className="mx-auto w-full max-w-6xl space-y-5">
       <FadeIn>
         <div className="overflow-hidden rounded-lg border border-border bg-surface">
-          <div className="border-b border-border bg-primary px-5 py-7 text-white md:px-7 md:py-8">
+          <div className="border-b border-border bg-primary px-4 py-6 text-white sm:px-5 sm:py-7 md:px-7 md:py-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <Avatar
                   name={displayName}
                   size="lg"
                   className="ring-white/20"
                 />
-                <div>
+                <div className="min-w-0">
                   <p className="text-caption text-white/70">Account</p>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-white md:text-3xl">
+                  <h2 className="mt-1 truncate text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl">
                     {displayName}
                   </h2>
-                  <p className="mt-1 text-sm text-white/80">
+                  <p className="mt-1 truncate text-sm text-white/80">
                     {displayRole}
                     {displayDept ? (
                       <>
@@ -73,7 +76,7 @@ export function SettingsView() {
                     ) : null}
                   </p>
                   {displayEmail ? (
-                    <p className="mt-1 text-xs text-white/60">
+                    <p className="mt-1 truncate text-xs text-white/60">
                       {displayEmail}
                     </p>
                   ) : null}
@@ -120,6 +123,7 @@ export function SettingsView() {
             <div className="min-w-0 p-4 md:p-6">
               {section === "profile" ? <ProfileForm /> : null}
               {section === "appearance" ? <AppearanceSettings /> : null}
+              {section === "ai" ? <AiModelSettings /> : null}
               {section === "notifications" ? <NotificationSettings /> : null}
             </div>
           </div>

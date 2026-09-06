@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, Trash2 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
 import { apiFetch } from "@/utils/api";
+
+const STATUSES = [
+  { value: "active", label: "Active" },
+  { value: "away", label: "Away" },
+  { value: "inactive", label: "Inactive" },
+];
 
 function statusTone(status) {
   const value = String(status || "").toLowerCase();
@@ -15,10 +21,63 @@ function statusTone(status) {
   return "default";
 }
 
-export function EmployeeCard({ employee, onDeleted, className }) {
+function statusSelectClass(status) {
+  const value = String(status || "").toLowerCase();
+  if (value === "active") {
+    return "border-success/40 bg-success/10 text-success";
+  }
+  if (value === "away") {
+    return "border-warning/40 bg-warning/10 text-warning";
+  }
+  return "border-border bg-surface text-muted";
+}
+
+export function EmployeeCard({
+  employee,
+  onDeleted,
+  onStatusUpdated,
+  className,
+}) {
+  const [status, setStatus] = useState(employee.status);
+  const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setStatus(employee.status);
+  }, [employee.status]);
+
+  async function handleStatusChange(event) {
+    const nextStatus = event.target.value;
+    const previous = status;
+    setStatus(nextStatus);
+    setSaving(true);
+    setError("");
+
+    try {
+      const res = await apiFetch(
+        `/api/employees/${encodeURIComponent(employee.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: nextStatus }),
+        },
+      );
+      const data = await res.json();
+      if (!data.success) {
+        setStatus(previous);
+        setError(data.error || "Unable to update status.");
+        return;
+      }
+      onStatusUpdated?.(data.employee || { ...employee, status: nextStatus });
+    } catch {
+      setStatus(previous);
+      setError("Unable to update status.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleDelete() {
     if (!confirming) {
@@ -52,41 +111,61 @@ export function EmployeeCard({ employee, onDeleted, className }) {
   return (
     <article
       className={cn(
-        "group grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-border px-4 py-3.5 transition hover:bg-background/90 sm:gap-4 sm:px-5",
+        "border-b border-border px-4 py-4 transition hover:bg-background/90 last:border-b-0 sm:px-5",
         className,
       )}
     >
-      <Avatar name={employee.name} src={employee.avatar} size="md" />
+      <div className="flex items-start gap-3">
+        <Avatar name={employee.name} src={employee.avatar} size="md" />
 
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="truncate text-sm font-semibold text-foreground">
-            {employee.name}
-          </h3>
-          <Badge
-            tone={statusTone(employee.status)}
-            dot
-            className="capitalize"
-          >
-            {employee.status}
-          </Badge>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-foreground">
+              {employee.name}
+            </h3>
+            <Badge
+              tone={statusTone(status)}
+              dot
+              className="capitalize"
+            >
+              {status}
+            </Badge>
+          </div>
+          <p className="mt-0.5 truncate text-xs text-muted">
+            {employee.position}
+            <span className="mx-1.5 text-border">·</span>
+            <span className="font-medium text-primary">
+              {employee.department}
+            </span>
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted">
+            <Mail className="h-3 w-3 shrink-0" aria-hidden />
+            <span className="truncate">{employee.email}</span>
+          </p>
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted">
-          {employee.position}
-          <span className="mx-1.5 text-border">·</span>
-          <span className="font-medium text-primary">
-            {employee.department}
-          </span>
-        </p>
-        <p className="mt-1 hidden truncate text-xs text-muted sm:flex sm:items-center sm:gap-1.5">
-          <Mail className="h-3 w-3 shrink-0" aria-hidden />
-          {employee.email}
-        </p>
       </div>
 
-      <div className="flex shrink-0 flex-col items-end gap-1">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <select
+          aria-label={`Status for ${employee.name}`}
+          value={status}
+          disabled={saving || deleting}
+          onChange={handleStatusChange}
+          className={cn(
+            "h-9 min-w-0 flex-1 rounded-md border px-2 text-xs font-semibold capitalize outline-none transition",
+            "focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60",
+            statusSelectClass(status),
+          )}
+        >
+          {STATUSES.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
         {confirming ? (
-          <div className="flex flex-wrap justify-end gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             <Button
               size="sm"
               variant="destructive"
@@ -108,24 +187,20 @@ export function EmployeeCard({ employee, onDeleted, className }) {
           <Button
             size="sm"
             variant="ghost"
-            className="text-muted opacity-70 transition group-hover:opacity-100 hover:bg-error/10 hover:text-error"
+            className="shrink-0 text-muted hover:bg-error/10 hover:text-error"
             onClick={handleDelete}
             aria-label={`Delete ${employee.name}`}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
-        {employee.joinedAt ? (
-          <p className="hidden text-[10px] text-muted md:block">
-            Joined {employee.joinedAt}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="max-w-[8rem] text-right text-[10px] text-error" role="alert">
-            {error}
-          </p>
-        ) : null}
       </div>
+
+      {error ? (
+        <p className="mt-2 text-[11px] text-error" role="alert">
+          {error}
+        </p>
+      ) : null}
     </article>
   );
 }

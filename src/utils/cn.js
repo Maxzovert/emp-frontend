@@ -1,8 +1,10 @@
+import { twMerge } from "tailwind-merge";
+
 export function cn(...parts) {
-  return parts
+  const flat = parts
     .flatMap((part) => {
       if (!part) return [];
-      if (typeof part === "string") return part.split(" ");
+      if (typeof part === "string") return part.split(/\s+/);
       if (Array.isArray(part)) return part;
       if (typeof part === "object") {
         return Object.entries(part)
@@ -11,6 +13,7 @@ export function cn(...parts) {
       }
       return [];
     })
-    .filter(Boolean)
-    .join(" ");
+    .filter(Boolean);
+
+  return twMerge(flat.join(" "));
 }

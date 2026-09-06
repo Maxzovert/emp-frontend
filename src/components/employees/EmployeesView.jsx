@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Plus, Users } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/employees/AddEmployeeDialog";
 import { DepartmentFilter } from "@/components/employees/DepartmentFilter";
+import { EmployeeGrid } from "@/components/employees/EmployeeGrid";
 import { EmployeeSearch } from "@/components/employees/EmployeeSearch";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { Button } from "@/components/ui/Button";
@@ -87,18 +88,22 @@ export function EmployeesView() {
     <div className="mx-auto w-full max-w-6xl space-y-5">
       <FadeIn>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+          <div className="min-w-0">
             <p className="text-caption text-primary">Directory</p>
             <h2 className="mt-2 text-h1 text-foreground">People</h2>
             <p className="mt-2 max-w-xl text-sm text-muted">
               Search the roster, filter by department, and update status in place.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             <Badge tone={source === "neon" ? "success" : "warning"}>
               {source === "neon" ? "Live Neon" : "Demo data"}
             </Badge>
-            <Button size="sm" onClick={() => setAddOpen(true)}>
+            <Button
+              size="sm"
+              className="ml-auto sm:ml-0"
+              onClick={() => setAddOpen(true)}
+            >
               <Plus className="h-4 w-4" />
               Add person
             </Button>
@@ -133,7 +138,16 @@ export function EmployeesView() {
         />
       ) : null}
 
-      {!error && loading ? <EmployeeTable loading /> : null}
+      {!error && loading ? (
+        <>
+          <div className="md:hidden">
+            <EmployeeGrid loading />
+          </div>
+          <div className="hidden md:block">
+            <EmployeeTable loading />
+          </div>
+        </>
+      ) : null}
 
       {!error && !loading && filtered.length === 0 ? (
         <EmptyState
@@ -157,11 +171,22 @@ export function EmployeesView() {
       ) : null}
 
       {!error && !loading && filtered.length > 0 ? (
-        <EmployeeTable
-          employees={filtered}
-          onDeleted={handleDeleted}
-          onStatusUpdated={handleStatusUpdated}
-        />
+        <>
+          <div className="md:hidden">
+            <EmployeeGrid
+              employees={filtered}
+              onDeleted={handleDeleted}
+              onStatusUpdated={handleStatusUpdated}
+            />
+          </div>
+          <div className="hidden md:block">
+            <EmployeeTable
+              employees={filtered}
+              onDeleted={handleDeleted}
+              onStatusUpdated={handleStatusUpdated}
+            />
+          </div>
+        </>
       ) : null}
 
       <AddEmployeeDialog

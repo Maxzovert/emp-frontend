@@ -23,11 +23,11 @@ export function LandingNavbar() {
   return (
     <header className="sticky top-0 z-50 h-16 border-b border-border bg-background">
       <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-4 md:px-6">
-        <Link to="/" className={`flex items-center gap-2.5 ${focusRing} rounded-md`}>
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-white">
+        <Link to="/" className={`flex min-w-0 items-center gap-2.5 ${focusRing} rounded-md`}>
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-bold text-on-primary">
             EA
           </span>
-          <span className="text-lg font-bold tracking-tight text-foreground">
+          <span className="truncate text-base font-bold tracking-tight text-foreground sm:text-lg">
             EmployeeAI
           </span>
         </Link>
@@ -68,7 +68,7 @@ export function LandingNavbar() {
 
           <button
             type="button"
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface md:hidden ${focusRing}`}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-foreground md:hidden ${focusRing}`}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -99,9 +99,18 @@ export function LandingNavbar() {
             href="/login"
             className="mt-1 w-full"
             size="sm"
+            variant="secondary"
             onClick={() => setOpen(false)}
           >
             Sign in
+          </Button>
+          <Button
+            href="/register"
+            className="w-full"
+            size="sm"
+            onClick={() => setOpen(false)}
+          >
+            Get started
           </Button>
         </div>
       </div>

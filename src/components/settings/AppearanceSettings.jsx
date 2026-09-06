@@ -33,7 +33,7 @@ export function AppearanceSettings() {
           Appearance
         </h3>
         <p className="mt-1 text-sm text-muted">
-          Dark is the brand default. Preference persists across refreshes.
+          Dark / light preference persists across refreshes. Light is the default.
         </p>
       </header>
 

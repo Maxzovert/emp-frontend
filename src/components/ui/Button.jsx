@@ -3,13 +3,18 @@ import { cn } from "@/utils/cn";
 
 const variants = {
   primary:
-    "bg-primary text-white hover:bg-primary-hover disabled:bg-primary-disabled disabled:text-white/70 disabled:opacity-100",
+    "bg-primary text-on-primary hover:bg-primary-hover disabled:bg-primary-disabled disabled:text-on-primary/70 disabled:opacity-100",
   secondary:
     "border border-border bg-surface text-foreground hover:bg-surface-elevated disabled:opacity-60",
   ghost:
-    "bg-transparent text-muted hover:bg-surface hover:text-foreground disabled:opacity-60",
+    "bg-transparent text-foreground/80 hover:bg-surface hover:text-foreground disabled:opacity-60",
   destructive:
     "bg-error/15 text-error hover:bg-error/25 disabled:opacity-60",
+  // For use on primary-colored surfaces (CTA bands)
+  inverse:
+    "bg-white text-primary hover:bg-white/90 disabled:bg-white/70 disabled:text-primary/60",
+  inverseOutline:
+    "border border-white/35 bg-transparent text-white hover:bg-white/10 disabled:opacity-60",
 };
 
 const sizes = {

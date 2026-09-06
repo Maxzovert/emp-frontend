@@ -109,7 +109,7 @@ export function AddEmployeeDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg border border-border bg-surface p-5  md:p-6"
+        className="max-h-[min(92dvh,40rem)] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-surface p-5 sm:rounded-lg md:p-6"
       >
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>

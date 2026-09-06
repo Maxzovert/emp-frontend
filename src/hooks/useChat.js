@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/utils/api";
-import { isLikelyNetworkError, wakeApi } from "@/utils/wakeApi";
+import { isLikelyNetworkError, isProductionHost, wakeApi } from "@/utils/wakeApi";
 
 const CHATS_KEY = "employeeai-chats-v2";
 const LEGACY_KEY = "employeeai-chat-history";
@@ -476,9 +476,13 @@ export function useChat() {
         typewriter.stop();
         if (err?.name === "AbortError") return;
 
-        // Render free tier often times out on the first hit while sleeping.
+        // Production only: Render free tier often times out while sleeping.
         // Wake /health once, then retry the same message.
-        if (!afterWake && isLikelyNetworkError(err)) {
+        if (
+          isProductionHost() &&
+          !afterWake &&
+          isLikelyNetworkError(err)
+        ) {
           setConversations((prev) =>
             prev.map((chat) => {
               if (chat.id !== activeIdRef.current) return chat;

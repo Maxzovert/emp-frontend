@@ -22,10 +22,11 @@ import {
 } from "@/context/AssistantPanelContext";
 import { useChat } from "@/hooks/useChat";
 import { cn } from "@/utils/cn";
-import { wakeApi } from "@/utils/wakeApi";
+import { isProductionHost, wakeApi } from "@/utils/wakeApi";
 
 function chatErrorDescription(error) {
   const msg = String(error || "").trim();
+  if (!isProductionHost()) return msg;
   if (/waking the render|couldn't reach the backend/i.test(msg)) {
     return msg;
   }
@@ -87,9 +88,9 @@ export function AssistantSidebar() {
     if (!open) setShowHistory(false);
   }, [open]);
 
-  // Warm Render early when the assistant opens (avoids first-message cold timeout).
+  // Production only: warm Render when the assistant opens.
   useEffect(() => {
-    if (!open || wokeRef.current) return;
+    if (!open || !isProductionHost() || wokeRef.current) return;
     wokeRef.current = true;
     wakeApi();
   }, [open]);

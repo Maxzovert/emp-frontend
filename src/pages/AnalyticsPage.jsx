@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
+import { apiFetch } from "@/utils/api";
 
 export function AnalyticsPage() {
   const [employees, setEmployees] = useState([]);
@@ -11,7 +12,7 @@ export function AnalyticsPage() {
 
     async function load() {
       try {
-        const res = await fetch("/api/employees", { credentials: "include" });
+        const res = await apiFetch("/api/employees");
         const data = await res.json();
         if (cancelled) return;
         if (data.success) {

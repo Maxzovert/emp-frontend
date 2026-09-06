@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/utils/cn";
+import { apiFetch } from "@/utils/api";
 
 const DEFAULT_DEPARTMENTS = [
   "Engineering",
@@ -72,7 +73,7 @@ export function AddEmployeeDialog({
     setSaving(true);
 
     try {
-      const res = await fetch("/api/employees", {
+      const res = await apiFetch("/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

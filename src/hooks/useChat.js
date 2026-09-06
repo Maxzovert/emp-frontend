@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiFetch } from "@/utils/api";
 
 const CHATS_KEY = "employeeai-chats-v2";
 const LEGACY_KEY = "employeeai-chat-history";
@@ -428,7 +429,7 @@ export function useChat() {
       });
 
       try {
-        const res = await fetch("/api/chat", {
+        const res = await apiFetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: trimmed, history, stream: true }),

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { cn } from "@/utils/cn";
+import { apiFetch } from "@/utils/api";
 
 const STATUSES = [
   { value: "active", label: "Active" },
@@ -70,7 +71,7 @@ function EmployeeRow({ employee, onDeleted, onStatusUpdated }) {
     setError("");
 
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/employees/${encodeURIComponent(employee.id)}`,
         {
           method: "PATCH",
@@ -103,7 +104,7 @@ function EmployeeRow({ employee, onDeleted, onStatusUpdated }) {
     setDeleting(true);
     setError("");
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/employees/${encodeURIComponent(employee.id)}`,
         { method: "DELETE" },
       );

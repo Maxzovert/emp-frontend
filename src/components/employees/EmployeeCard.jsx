@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/utils/cn";
+import { apiFetch } from "@/utils/api";
 
 function statusTone(status) {
   const value = String(status || "").toLowerCase();
@@ -29,7 +30,7 @@ export function EmployeeCard({ employee, onDeleted, className }) {
     setDeleting(true);
     setError("");
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/employees/${encodeURIComponent(employee.id)}`,
         { method: "DELETE" },
       );

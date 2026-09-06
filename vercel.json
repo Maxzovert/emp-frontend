@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://emp-backend-4wcb.onrender.com/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://emp-backend-4wcb.onrender.com/health"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

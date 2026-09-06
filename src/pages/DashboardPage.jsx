@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { DashboardView } from "@/components/dashboard/DashboardView";
+import { apiFetch } from "@/utils/api";
 
 export function DashboardPage() {
   const [employees, setEmployees] = useState([]);
@@ -11,7 +12,7 @@ export function DashboardPage() {
 
     async function load() {
       try {
-        const res = await fetch("/api/employees", { credentials: "include" });
+        const res = await apiFetch("/api/employees");
         const data = await res.json();
         if (cancelled) return;
         if (data.success) {

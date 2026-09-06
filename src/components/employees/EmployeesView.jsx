@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Badge } from "@/components/ui/Badge";
 import { FadeIn } from "@/components/motion/FadeIn";
+import { apiFetch } from "@/utils/api";
 import {
   filterEmployees,
   getDepartmentsFromList,
@@ -31,7 +32,7 @@ export function EmployeesView() {
     setError(null);
 
     try {
-      const res = await fetch("/api/employees");
+      const res = await apiFetch("/api/employees");
       const data = await res.json();
 
       if (!data.success) {

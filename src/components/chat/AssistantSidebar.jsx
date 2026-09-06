@@ -22,6 +22,21 @@ import {
 } from "@/context/AssistantPanelContext";
 import { useChat } from "@/hooks/useChat";
 import { cn } from "@/utils/cn";
+import { wakeApi } from "@/utils/wakeApi";
+
+function chatErrorDescription(error) {
+  const msg = String(error || "").trim();
+  if (/waking the render|couldn't reach the backend/i.test(msg)) {
+    return msg;
+  }
+  if (/no ai provider|add an api key|settings/i.test(msg)) {
+    return `${msg} Saving a key again after the backend is awake usually fixes this — relogin alone does not.`;
+  }
+  if (/failed to fetch|network|unable to reach|timeout/i.test(msg)) {
+    return `${msg} The backend runs on Render’s free tier and sleeps when idle — wait, then try again. Relogin does not wake the server.`;
+  }
+  return `${msg} If this keeps happening after idle, the Render free-tier API may still be starting.`;
+}
 
 export function AssistantSidebar() {
   const {
@@ -40,6 +55,7 @@ export function AssistantSidebar() {
   const promptHandled = useRef(null);
   const historyCloseRef = useRef(null);
   const dragRef = useRef(null);
+  const wokeRef = useRef(false);
 
   const {
     conversations,
@@ -69,6 +85,13 @@ export function AssistantSidebar() {
 
   useEffect(() => {
     if (!open) setShowHistory(false);
+  }, [open]);
+
+  // Warm Render early when the assistant opens (avoids first-message cold timeout).
+  useEffect(() => {
+    if (!open || wokeRef.current) return;
+    wokeRef.current = true;
+    wakeApi();
   }, [open]);
 
   useEffect(() => {
@@ -325,7 +348,7 @@ export function AssistantSidebar() {
               <div className="px-3 pb-2">
                 <ErrorState
                   title="Couldn't reach the assistant"
-                  description={`${error} The backend runs on Render’s free tier, so it can take a while to wake up after idle — please wait a bit, then reload or try again.`}
+                  description={chatErrorDescription(error)}
                   onRetry={retry}
                   className="py-6"
                 />

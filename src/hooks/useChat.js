@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "@/utils/api";
+import { isLikelyNetworkError, wakeApi } from "@/utils/wakeApi";
 
 const CHATS_KEY = "employeeai-chats-v2";
 const LEGACY_KEY = "employeeai-chat-history";
@@ -332,7 +333,7 @@ export function useChat() {
   }, [patchActive]);
 
   const sendMessage = useCallback(
-    async (text, { retrying = false } = {}) => {
+    async (text, { retrying = false, afterWake = false } = {}) => {
       const trimmed = String(text ?? "").trim();
       if (!trimmed || loadingRef.current) return;
 
@@ -397,6 +398,7 @@ export function useChat() {
       abortRef.current = controller;
 
       let assembled = "";
+      let handOffRetry = false;
 
       const typewriter = createTypewriter({
         onUpdate: (text, stillStreaming) => {
@@ -473,6 +475,38 @@ export function useChat() {
       } catch (err) {
         typewriter.stop();
         if (err?.name === "AbortError") return;
+
+        // Render free tier often times out on the first hit while sleeping.
+        // Wake /health once, then retry the same message.
+        if (!afterWake && isLikelyNetworkError(err)) {
+          setConversations((prev) =>
+            prev.map((chat) => {
+              if (chat.id !== activeIdRef.current) return chat;
+              return {
+                ...chat,
+                messages: chat.messages.filter(
+                  (m) => !(m.id === assistantId && !m.content),
+                ),
+              };
+            }),
+          );
+          setError(
+            "Waking the Render free-tier backend — this can take up to a minute. Please wait…",
+          );
+          const awake = await wakeApi();
+          if (awake) {
+            handOffRetry = true;
+            loadingRef.current = false;
+            setLoading(false);
+            abortRef.current = null;
+            return sendMessage(trimmed, { retrying: true, afterWake: true });
+          }
+          setError(
+            "Couldn't reach the backend. Render’s free tier may still be starting — wait about a minute, open /health until it responds, then try again. Relogin does not fix this.",
+          );
+          return;
+        }
+
         setError(err.message || "Unable to reach the AI service.");
         setConversations((prev) =>
           prev.map((chat) => {
@@ -486,9 +520,11 @@ export function useChat() {
           }),
         );
       } finally {
-        loadingRef.current = false;
-        setLoading(false);
-        abortRef.current = null;
+        if (!handOffRetry) {
+          loadingRef.current = false;
+          setLoading(false);
+          abortRef.current = null;
+        }
       }
     },
     [],
